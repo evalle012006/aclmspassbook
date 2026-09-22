@@ -63,6 +63,14 @@ export default function AccountProfileScreen() {
             value={profile?.dateAdded ? new Date(profile.dateAdded).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" }) : undefined}
           />
           <Row label="Status" value={profile?.status} capitalize />
+          <View className="flex-row justify-between items-center">
+            <Text className="text-gray-500">Standing</Text>
+            <View className={`px-2 py-0.5 rounded-full ${profile?.delinquent ? "bg-red-50" : "bg-green-50"}`}>
+              <Text className={`text-xs font-semibold ${profile?.delinquent ? "text-danger" : "text-success"}`}>
+                {profile?.delinquent ? "Delinquent" : "Good Standing"}
+              </Text>
+            </View>
+          </View>
         </Section>
 
         {/* Government ID */}

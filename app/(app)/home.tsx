@@ -93,14 +93,19 @@ export default function HomeScreen() {
           />
           <Row label="Status" value={profile?.status} capitalize />
 
+          <View className="flex-row justify-between items-center">
+            <Text className="text-gray-500">Standing</Text>
+            <View className={`px-2 py-0.5 rounded-full ${profile?.delinquent ? "bg-red-50" : "bg-green-50"}`}>
+              <Text className={`text-xs font-semibold ${profile?.delinquent ? "text-danger" : "text-success"}`}>
+                {profile?.delinquent ? "Delinquent" : "Good Standing"}
+              </Text>
+            </View>
+          </View>
+
           {/* MCBU is shown to every member; CSF is a group-fund figure the
               group leader specifically is responsible for tracking. */}
           {currentLoan && <Row label="MCBU" value={peso(currentLoan.mcbu)} />}
           {isGroupLeader && currentLoan && <Row label="CSF" value={peso(currentLoan.csf)} />}
-
-          {!!profile?.delinquent && (
-            <Text className="text-danger font-medium">Account has a past-due balance</Text>
-          )}
         </View>
 
         {/* Guarantor on file — resolved from the latest CI-approved
@@ -149,6 +154,7 @@ export default function HomeScreen() {
               )}
               <LoanStat label="Term" value={formatTerm(currentLoan.loanTerms, currentLoan.occurence)} />
               <LoanStat label="Payments made" value={currentLoan.noOfPayments != null ? String(currentLoan.noOfPayments) : "—"} />
+              <LoanStat label="Missed payments" value={String(currentLoan.mispayment ?? 0)} danger={!!currentLoan.mispayment} />
             </View>
 
             <View className="mt-3 pt-3 border-t border-gray-100 gap-1">
