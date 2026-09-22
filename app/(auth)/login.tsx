@@ -27,7 +27,7 @@ export default function LoginScreen() {
       if (result.success) {
         router.push({
           pathname: "/(auth)/verify-otp",
-          params: { contactNumber, flow: result.flow ?? "login" },
+          params: { contactNumber, flow: result.flow ?? "login", ...(result.debugCode && { debugCode: result.debugCode }) },
         });
         return;
       }

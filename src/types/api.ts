@@ -149,6 +149,10 @@ export interface RequestOtpResponse {
   code?: "NO_CLIENT_FOUND" | "DISAMBIGUATION_REQUIRED" | "STAFF_ACTIVATION_REQUIRED" | "COOLDOWN_ACTIVE";
   retryAfterSeconds?: number;
   message?: string;
+  // Only present when the backend's MOBILE_OTP_DEBUG_LOG is on (never in
+  // production — see request-otp.js). Lets the app show the code directly
+  // instead of someone relaying it from server logs.
+  debugCode?: string;
 }
 
 export interface VerifyOtpResponse {

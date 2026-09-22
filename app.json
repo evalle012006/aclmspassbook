@@ -41,8 +41,12 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiBaseUrl": "http://192.168.254.106:3000/api/mobile",
-      "webAppOrigin": "http://192.168.254.106:3000"
+      "apiBaseUrl": "https://lmsv2.ambercashph.com/api/mobile",
+      "webAppOrigin": "https://lmsv2.ambercashph.com",
+      "router": {},
+      "eas": {
+        "projectId": "dae358b3-3d2c-42ac-ae2c-356777257624"
+      }
     }
   }
 }

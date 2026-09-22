@@ -24,7 +24,7 @@ export default function DisambiguateScreen() {
       const result = await requestOtp({ contactNumber, lastName, birthdate });
 
       if (result.success) {
-        router.push({ pathname: "/(auth)/verify-otp", params: { contactNumber, flow: result.flow ?? "enrollment" } });
+        router.push({ pathname: "/(auth)/verify-otp", params: { contactNumber, flow: result.flow ?? "enrollment", ...(result.debugCode && { debugCode: result.debugCode }) } });
         return;
       }
 
