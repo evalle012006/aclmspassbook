@@ -9,7 +9,7 @@ import {
   setToken as persistToken,
 } from "@/services/auth-storage";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 interface AuthState {
   isLoading: boolean;
@@ -17,6 +17,13 @@ interface AuthState {
   clientId: string | null;
   signIn: (token: string, refreshToken: string, clientId: string) => Promise<void>;
   signOut: () => Promise<void>;
+  // True for a brief window right after signIn() — lets the biometric lock
+  // gate skip its "cold start with an existing session" check exactly once,
+  // since the person just proved identity via OTP moments ago. Consumed via
+  // consumeJustSignedIn() so it only ever applies to that one moment, not
+  // every render afterward.
+  justSignedIn: boolean;
+  consumeJustSignedIn: () => void;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -24,6 +31,9 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [clientId, setClientId] = useState<string | null>(null);
+  const justSignedInRef = useRef(false);
+  const [, forceRender] = useState(0); // re-render consumers when the ref flips
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -56,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.clear();
     await persistToken(token, newClientId);
     await persistRefreshToken(refreshToken);
+    justSignedInRef.current = true;
     setClientId(newClientId);
   }, [queryClient]);
 
@@ -67,8 +78,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
+  const consumeJustSignedIn = useCallback(() => {
+    justSignedInRef.current = false;
+    forceRender((n) => n + 1);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ isLoading, isSignedIn: !!clientId, clientId, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        isLoading,
+        isSignedIn: !!clientId,
+        clientId,
+        signIn,
+        signOut,
+        justSignedIn: justSignedInRef.current,
+        consumeJustSignedIn,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

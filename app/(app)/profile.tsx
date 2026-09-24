@@ -2,9 +2,12 @@ import { ListSkeleton } from "@/components/ListSkeleton";
 import { EmptyState, ErrorBanner } from "@/components/StatusViews";
 import { useClientPhotoUrl, useClientProfile, useClientPrograms } from "@/hooks/useClientData";
 import { getErrorMessage } from "@/services/api";
+import { getBiometricPreference, setBiometricPreference } from "@/services/auth-storage";
+import { isBiometricAvailable, promptBiometric } from "@/services/biometric-service";
 import type { ClientProgram } from "@/types/api";
-import React from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Alert, Image, Pressable, ScrollView, Switch, Text, View } from "react-native";
 
 export default function AccountProfileScreen() {
   const { data: profile, isLoading, isError, error, refetch } = useClientProfile();
@@ -12,6 +15,31 @@ export default function AccountProfileScreen() {
   const { data: govIdPhotoUrl } = useClientPhotoUrl("governmentId");
   const { data: selfiePhotoUrl } = useClientPhotoUrl("selfieWithId");
   const { data: programs } = useClientPrograms();
+
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricEnabled, setBiometricEnabledState] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const [supported, pref] = await Promise.all([isBiometricAvailable(), getBiometricPreference()]);
+      setBiometricSupported(supported);
+      setBiometricEnabledState(pref);
+    })();
+  }, []);
+
+  async function handleToggleBiometric(value: boolean) {
+    if (value) {
+      // Same reasoning as setup-biometric.tsx: confirm biometrics actually
+      // work on this device before persisting the preference, rather than
+      // just saving a boolean and hoping.
+      const success = await promptBiometric("Confirm to enable biometric lock");
+      if (!success) return; // leave the switch off, don't save the preference
+    } else {
+      Alert.alert("Biometric lock off", "Anyone with your phone unlocked can open AmberCash without Face ID or fingerprint.");
+    }
+    setBiometricEnabledState(value);
+    await setBiometricPreference(value);
+  }
 
   if (isLoading) return <ListSkeleton rows={3} />;
   if (isError) return <ErrorBanner message={getErrorMessage(error)} onRetry={() => refetch()} />;
@@ -71,6 +99,29 @@ export default function AccountProfileScreen() {
               </Text>
             </View>
           </View>
+        </Section>
+
+        {/* Security — always shown for Change Password; biometric toggle
+            only shown when the device actually has usable hardware. */}
+        <Section title="Security">
+          {biometricSupported && (
+            <View className="flex-row justify-between items-center pb-4 mb-4 border-b border-gray-100">
+              <View className="flex-1 pr-4">
+                <Text className="text-gray-900">Biometric Lock</Text>
+                <Text className="text-gray-400 text-xs mt-0.5">
+                  Require Face ID or fingerprint when reopening the app
+                </Text>
+              </View>
+              <Switch value={biometricEnabled} onValueChange={handleToggleBiometric} />
+            </View>
+          )}
+          <Pressable
+            onPress={() => router.push("/(app)/change-password")}
+            className="flex-row justify-between items-center"
+          >
+            <Text className="text-gray-900">Change Password</Text>
+            <Text className="text-brand-600 text-sm">Set / Update →</Text>
+          </Pressable>
         </Section>
 
         {/* Government ID */}

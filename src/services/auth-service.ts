@@ -1,5 +1,26 @@
+import type { AuthConfigResponse, PasswordLoginResponse, RequestOtpResponse, SetPasswordResponse, VerifyOtpResponse } from "@/types/api";
 import { api } from "./api";
-import type { RequestOtpResponse, VerifyOtpResponse } from "@/types/api";
+
+export async function getAuthConfig(): Promise<AuthConfigResponse> {
+  const { data } = await api.get<AuthConfigResponse>("/auth/config");
+  return data;
+}
+
+export async function loginWithPassword(params: {
+  identifier: string; // phone number OR government ID number
+  password: string;
+}): Promise<PasswordLoginResponse> {
+  const { data } = await api.post<PasswordLoginResponse>("/auth/login-password", params);
+  return data;
+}
+
+export async function setPassword(params: {
+  currentPassword?: string; // omit when setting for the first time
+  newPassword: string;
+}): Promise<SetPasswordResponse> {
+  const { data } = await api.post<SetPasswordResponse>("/auth/set-password", params);
+  return data;
+}
 
 export async function requestOtp(params: {
   contactNumber: string;

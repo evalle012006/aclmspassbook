@@ -41,6 +41,11 @@ async function deleteItem(key: string) {
 const TOKEN_KEY = "ambercash_client_token";
 const REFRESH_TOKEN_KEY = "ambercash_refresh_token";
 const CLIENT_ID_KEY = "ambercash_client_id";
+const BIOMETRIC_PREF_KEY = "ambercash_biometric_enabled";
+// Not a secret — just the phone/ID number they logged in with, remembered
+// per-device so the biometric-lock's "use password instead" fallback can
+// pre-fill it instead of asking again.
+const LAST_IDENTIFIER_KEY = "ambercash_last_identifier";
 
 export async function setToken(token: string, clientId: string) {
   await setItem(TOKEN_KEY, token);
@@ -73,4 +78,28 @@ export async function clearToken() {
   await deleteItem(TOKEN_KEY);
   await deleteItem(REFRESH_TOKEN_KEY);
   await deleteItem(CLIENT_ID_KEY);
+  // Deliberately NOT clearing the biometric preference here — it's a
+  // per-device setting, not part of the session. A signed-out-then-back-in
+  // client on the same phone shouldn't have to re-opt-in.
+}
+
+// Defaults to enabled (returns true) if never explicitly set — the app
+// checks hardware/enrollment separately before ever acting on this, so
+// defaulting "on" just means "use it if the device supports it", not
+// "force it on unsupported devices".
+export async function getBiometricPreference(): Promise<boolean> {
+  const value = await getItem(BIOMETRIC_PREF_KEY);
+  return value !== "false";
+}
+
+export async function setBiometricPreference(enabled: boolean) {
+  await setItem(BIOMETRIC_PREF_KEY, enabled ? "true" : "false");
+}
+
+export async function setLastIdentifier(identifier: string) {
+  await setItem(LAST_IDENTIFIER_KEY, identifier);
+}
+
+export async function getLastIdentifier(): Promise<string | null> {
+  return getItem(LAST_IDENTIFIER_KEY);
 }
