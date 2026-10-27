@@ -138,9 +138,10 @@ export interface CiInvestigation {
 export interface Guarantor {
   firstName: string;
   lastName: string;
-  relationship?: string;
+  address?: string | null;
+  relationship?: string | null;
+  phoneNumber?: string | null;
 }
-
 export type RequestOtpFlow = "login" | "enrollment";
 
 export interface RequestOtpResponse {

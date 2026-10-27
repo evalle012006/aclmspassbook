@@ -4,7 +4,7 @@ import { useClientProfile } from "@/hooks/useClientData";
 import { getErrorMessage } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
@@ -37,6 +37,12 @@ export default function QrScreen() {
   const qrValue = `${webAppOrigin}/transactions/cash-collection/qr-collect/${profile.qrToken}`;
 
   async function handleDownload() {
+    if (!profile?.qrToken) {
+      Alert.alert("QR unavailable", "Your QR code is not available.");
+      return;
+    }
+
+    const clientId = profile._id;
     setIsSaving(true);
     try {
       const isAvailable = await Sharing.isAvailableAsync();
@@ -53,7 +59,7 @@ export default function QrScreen() {
         qrRef.current.toDataURL((data: string) => resolve(data));
       });
 
-      const fileUri = `${FileSystem.cacheDirectory}ambercash-qr-${profile._id}.png`;
+      const fileUri = `${FileSystem.cacheDirectory}ambercash-qr-${clientId}.png`;
       await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
 
       // Opens the OS share sheet — "Save Image" (iOS) / "Save to Photos" or

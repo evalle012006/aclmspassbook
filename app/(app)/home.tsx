@@ -179,6 +179,34 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
+
+          {/* MCBU */}
+            {currentLoan && (
+              <Row
+                label="MCBU"
+                value={peso(currentLoan.mcbu)}
+              />
+            )}
+
+            {/* Loan Cycle */}
+            {currentLoan && (
+              <Row
+                label="Loan Cycle"
+                value={
+                  currentLoan.loanCycle != null
+                    ? String(currentLoan.loanCycle)
+                    : "—"
+                }
+              />
+            )}
+
+            {/* CSF — Group Leader Only */}
+            {isGroupLeader && currentLoan && (
+              <Row
+                label="CSF"
+                value={peso(currentLoan.csf)}
+              />
+            )}
         </View>
 
         {/* Guarantor on file — resolved from the latest CI-approved
