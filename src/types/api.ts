@@ -142,7 +142,6 @@ export interface Guarantor {
   relationship?: string | null;
   phoneNumber?: string | null;
 }
-
 export type RequestOtpFlow = "login" | "enrollment";
 
 export interface RequestOtpResponse {
