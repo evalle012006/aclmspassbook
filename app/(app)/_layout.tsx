@@ -27,42 +27,42 @@ export default function AppLayout() {
           name="home"
           options={{
             title: "Home",
-            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen
           name="loans/index"
           options={{
             title: "Loans",
-            tabBarIcon: ({ color, size }) => <Ionicons name="cash-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen
           name="withdrawals"
           options={{
             title: "Withdrawals",
-            tabBarIcon: ({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen
           name="applications"
           options={{
             title: "Applications",
-            tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen
           name="qr"
           options={{
             title: "My QR",
-            tabBarIcon: ({ color, size }) => <Ionicons name="qr-code-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: "Profile",
-            tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={String(color ?? "#6b7280")} />,
           }}
         />
         <Tabs.Screen name="loans/[loanId]/payments" options={{ href: null }} />
