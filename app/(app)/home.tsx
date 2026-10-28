@@ -1,12 +1,9 @@
-import { CircularGauge } from "@/components/CircularGauge";
 import { ListSkeleton } from "@/components/ListSkeleton";
 import { ErrorBanner } from "@/components/StatusViews";
 import { getCurrentLoan, getTransferDate, useClientPhotoUrl, useClientProfile, useGuarantor, useLoans } from "@/hooks/useClientData";
 import { getErrorMessage } from "@/services/api";
-import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
-import { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
 function peso(amount?: number) {
@@ -23,19 +20,11 @@ function formatTerm(loanTerms?: number, occurence?: string) {
   return `${loanTerms} ${unit}`;
 }
 
-function timeOfDayGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good Morning";
-  if (hour < 18) return "Good Afternoon";
-  return "Good Evening";
-}
-
 export default function HomeScreen() {
   const { data: profile, isLoading, isError, error, refetch } = useClientProfile();
   const { data: photoUrl } = useClientPhotoUrl();
   const { data: loans } = useLoans();
   const { data: guarantor } = useGuarantor();
-  const [savingsExpanded, setSavingsExpanded] = useState(false);
 
   if (isLoading) return <ListSkeleton rows={2} />;
 
@@ -65,19 +54,6 @@ export default function HomeScreen() {
     .filter(Boolean)
     .join(", ") || profile?.address;
 
-  // "On-Time Payment Rate", NOT a credit score — this is a real, derivable
-  // number from actual payment history (noOfPayments vs mispayment on the
-  // current loan). Deliberately not labeled as a "credit score" or similar,
-  // since no such formal metric exists anywhere in this system — showing
-  // one would mean presenting a fabricated number as if it were a real
-  // assessment of the client's creditworthiness.
-  const hasPaymentHistory = !!currentLoan?.noOfPayments && currentLoan.noOfPayments > 0;
-  const onTimeRate = hasPaymentHistory
-    ? Math.max(0, Math.min(100, ((currentLoan!.noOfPayments! - (currentLoan!.mispayment ?? 0)) / currentLoan!.noOfPayments!) * 100))
-    : null;
-
-  const totalSavings = (currentLoan?.mcbu ?? 0) + (isGroupLeader ? currentLoan?.csf ?? 0 : 0);
-
   return (
     <ScrollView className="flex-1 bg-gray-50">
       <View className="bg-brand-500 px-6 pt-6 pb-10 rounded-b-3xl">
@@ -90,7 +66,7 @@ export default function HomeScreen() {
             </View>
           )}
           <View className="flex-1">
-            <Text className="text-white/80 text-sm">{timeOfDayGreeting()},</Text>
+            <Text className="text-white/80 text-sm">Welcome back</Text>
             <View className="flex-row items-center gap-2">
               <Text className="text-white text-xl font-bold" numberOfLines={1}>{profile?.fullName}</Text>
               {isGroupLeader && (
@@ -99,68 +75,14 @@ export default function HomeScreen() {
                 </View>
               )}
             </View>
-            <Text className="text-white/70 text-xs mt-0.5" numberOfLines={1}>
-              {profile?.branchName}
-            </Text>
+            {profile?.branchName && (
+              <Text className="text-white/80 mt-0.5">{profile.branchName} branch</Text>
+            )}
           </View>
         </View>
       </View>
 
       <View className="px-6 -mt-6 gap-4">
-        {/* On-time payment rate — only shown once there's actual payment
-            history to compute it from; a brand-new loan with zero payments
-            yet has nothing honest to show here. */}
-        {onTimeRate !== null && (
-          <View className="bg-white rounded-2xl p-5 shadow-sm flex-row items-center gap-4">
-            <CircularGauge
-              percentage={onTimeRate}
-              color={onTimeRate >= 90 ? "#16a34a" : onTimeRate >= 70 ? "#d97706" : "#dc2626"}
-            />
-            <View className="flex-1">
-              <Text className="text-gray-900 font-semibold">On-Time Payment Rate</Text>
-              <Text className="text-gray-400 text-xs mt-1">
-                Based on {currentLoan!.noOfPayments} recorded payment{currentLoan!.noOfPayments === 1 ? "" : "s"} on your current loan
-                {!!currentLoan!.mispayment && `, ${currentLoan!.mispayment} missed`}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Savings — MCBU always shown, CSF only for group leaders (see
-            profile card below for the same rule applied there). */}
-        {currentLoan && (
-          <Pressable
-            onPress={() => setSavingsExpanded((v) => !v)}
-            className="bg-white rounded-2xl p-5 shadow-sm"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="w-11 h-11 rounded-full bg-brand-50 items-center justify-center">
-                <Ionicons name="wallet" size={20} color="#0f6fde" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-gray-500 text-xs">Savings</Text>
-                <Text className="text-gray-900 font-bold text-lg">{peso(totalSavings)}</Text>
-              </View>
-              <Ionicons name={savingsExpanded ? "chevron-up" : "chevron-down"} size={18} color="#9ca3af" />
-            </View>
-
-            {savingsExpanded && (
-              <View className="mt-3 pt-3 border-t border-gray-100 gap-2">
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-500 text-sm">MCBU</Text>
-                  <Text className="text-gray-900 font-medium text-sm">{peso(currentLoan.mcbu)}</Text>
-                </View>
-                {isGroupLeader && (
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-500 text-sm">CSF</Text>
-                    <Text className="text-gray-900 font-medium text-sm">{peso(currentLoan.csf)}</Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </Pressable>
-        )}
-
         {/* Profile details */}
         <View className="bg-white rounded-2xl p-5 shadow-sm gap-3">
           <Row label="Contact number" value={profile?.contactNumber} />
@@ -180,6 +102,8 @@ export default function HomeScreen() {
             </View>
           </View>
 
+          {/* MCBU is shown to every member; CSF is a group-fund figure the
+              group leader specifically is responsible for tracking. */}
           {/* MCBU */}
             {currentLoan && (
               <Row
@@ -200,7 +124,7 @@ export default function HomeScreen() {
               />
             )}
 
-            {/* CSF — Group Leader Only */}
+            {/* CSF - Group Leader Only */}
             {isGroupLeader && currentLoan && (
               <Row
                 label="CSF"
@@ -209,17 +133,39 @@ export default function HomeScreen() {
             )}
         </View>
 
-        {/* Guarantor on file — resolved from the latest CI-approved
-            application; may be absent if no application has been approved yet. */}
+        {/* Guarantor on File */}
         {guarantor && (
-          <View className="bg-white rounded-2xl p-5 shadow-sm">
-            <Text className="text-gray-900 font-semibold mb-2">Guarantor on File</Text>
-            <Text className="text-gray-700">
-              {[guarantor.firstName, guarantor.lastName].filter(Boolean).join(" ")}
+          <View className="bg-white rounded-2xl p-5 shadow-sm gap-3">
+
+            <Text className="text-gray-900 font-semibold text-base mb-2">
+              Guarantor on File
             </Text>
-            {guarantor.relationship && (
-              <Text className="text-gray-400 text-xs mt-0.5 capitalize">{guarantor.relationship}</Text>
-            )}
+
+            <Row
+              label="Guarantor Name"
+              value={
+                [guarantor.firstName, guarantor.lastName]
+                  .filter(Boolean)
+                  .join(" ") || "—"
+              }
+            />
+
+            <Row
+              label="Address"
+              value={guarantor.address || "—"}
+            />
+
+            <Row
+              label="Relation to Borrower"
+              value={guarantor.relationship || "—"}
+              capitalize
+            />
+
+            <Row
+              label="Phone Number"
+              value={guarantor.phoneNumber || "—"}
+            />
+
           </View>
         )}
 

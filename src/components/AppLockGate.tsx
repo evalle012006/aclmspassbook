@@ -132,8 +132,13 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
     if (!isSignedIn) return;
 
     const subscription = AppState.addEventListener("change", async (nextState: AppStateStatus) => {
-      const cameToForeground = appState.current.match(/inactive|background/) && nextState === "active";
-      appState.current = nextState;
+    const previousState = appState.current;
+
+    const cameToForeground =
+      (previousState === "inactive" || previousState === "background") &&
+      nextState === "active";
+
+    appState.current = nextState;
 
       if (cameToForeground) {
         if (suppressNextForegroundCheck.current) {

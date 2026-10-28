@@ -142,6 +142,7 @@ export interface Guarantor {
   relationship?: string | null;
   phoneNumber?: string | null;
 }
+
 export type RequestOtpFlow = "login" | "enrollment";
 
 export interface RequestOtpResponse {
@@ -163,15 +164,14 @@ export interface VerifyOtpResponse {
   clientId?: string;
   code?: "EXPIRED" | "INCORRECT" | "ACCOUNT_UNAVAILABLE" | "ACCOUNT_LOCKED" | "ENROLLMENT_LOCKED";
   message?: string;
-  // Present on success only — lets the app decide whether to show the
-  // one-time "set up a password?" prompt right after login.
-  passwordLoginEnabled?: boolean;
-  hasPassword?: boolean;
 }
 
 export interface AuthConfigResponse {
   success: boolean;
-  passwordLoginEnabled: boolean;
+  passwordLoginEnabled?: boolean;
+  otpLoginEnabled?: boolean;
+  registrationEnabled?: boolean;
+  message?: string;
 }
 
 export interface PasswordLoginResponse {
@@ -179,13 +179,13 @@ export interface PasswordLoginResponse {
   token?: string;
   refreshToken?: string;
   clientId?: string;
-  code?: "PASSWORD_LOGIN_DISABLED" | "INVALID_CREDENTIALS" | "PASSWORD_LOCKED" | "ACCOUNT_UNAVAILABLE";
-  message?: string;
   mustChangePassword?: boolean;
+  message?: string;
+  code?: string;
 }
 
 export interface SetPasswordResponse {
   success: boolean;
-  code?: "INCORRECT_CURRENT_PASSWORD";
   message?: string;
+  code?: string;
 }
